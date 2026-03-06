@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Buff | Premium Watchlist</title>
+    <meta name="description"
+        content="A beautiful and dynamic web application to track your favorite movies, TV shows, and anime.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="hero-bg-slider">
+        <div class="slide"
+            style="background-image: url('https://images.unsplash.com/photo-1559583109-3e7968136c99?q=80&w=2070&auto=format&fit=crop');">
+        </div>
+        <div class="slide"
+            style="background-image: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop');">
+        </div>
+        <div class="slide"
+            style="background-image: url('https://images.unsplash.com/photo-1618519764620-7403abdbdf9c?q=80&w=2070&auto=format&fit=crop');">
+        </div>
+    </div>
+    <div class="hero-overlay"></div>
+    <ul class="cinematic-particles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+
+    <div class="app-container hero-content-wrapper">
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="logo">Movie<span>Buff</span></h1>
+                <p class="subtitle">Curate your ultimate entertainment journey.</p>
+            </div>
+            <button id="add-btn" class="primary-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Title
+            </button>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-value" id="total-count">0</span>
+                <span class="stat-label">Total Titles</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="watched-count">0</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="watching-count">0</span>
+                <span class="stat-label">Currently Watching</span>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="watching">Watching</button>
+                <button class="filter-btn" data-filter="plan">Plan to Watch</button>
+                <button class="filter-btn" data-filter="completed">Completed</button>
+            </div>
+
+            <div id="watchlist-grid" class="watchlist-grid">
+                <!-- Items will be generated here by JS -->
+            </div>
+
+            <div id="empty-state" class="empty-state">
+                <div class="empty-icon">🎬</div>
+                <h3>Your watchlist is empty</h3>
+                <p>Start building your collection by adding your first title.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for adding new item -->
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Add New Title</h2>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <form id="add-form" class="modal-form">
+                <div id="selected-movie-info" class="selected-movie-info" style="display: none;">
+                    <img id="poster-preview" src="" alt="Poster Preview" class="passport-poster">
+                    <div class="movie-details">
+                        <h4 id="movie-title-display">Title</h4>
+                        <p id="movie-runtime-display" style="display:inline-block;">Runtime: N/A</p>
+                        <span id="movie-year-display"
+                            style="display:inline-block; margin-left: 10px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.8rem;"></span>
+                    </div>
+                </div>
+                <div class="form-group" style="position: relative;">
+                    <label for="title">Title Name</label>
+                    <input type="text" id="title" required placeholder="e.g. Inception" autocomplete="off">
+                    <div id="autocomplete-list" class="autocomplete-items"></div>
+                </div>
+                <input type="hidden" id="poster-url" value="">
+                <input type="hidden" id="runtime-val" value="">
+                <input type="hidden" id="year-val" value="">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Category</label>
+                        <select id="type" required>
+                            <option value="Movie">Movie</option>
+                            <option value="TV Show">TV Show</option>
+                            <option value="Anime">Anime</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" required>
+                            <option value="plan">Plan to Watch</option>
+                            <option value="watching">Currently Watching</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rating">Rating (Optional)</label>
+                    <div class="rating-input">
+                        <input type="number" id="rating" min="1" max="10" placeholder="1-10">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancel-btn" class="secondary-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save to Watchlist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
