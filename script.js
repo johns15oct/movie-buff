@@ -117,19 +117,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb';
-            const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+            const apiKey = 'b9a5e69d';
+            // Search all types first to get broader suggestions
+            const response = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             autocompleteList.innerHTML = '';
-            if (data.results && data.results.length > 0) {
-                data.results.slice(0, 5).forEach(item => {
+            if (data.Response === 'True' && data.Search && data.Search.length > 0) {
+                data.Search.slice(0, 5).forEach(item => {
                     const div = document.createElement('div');
-                    const title = item.title || item.name;
-                    if (!title) return; // Skip if no title/name
-
-                    const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-                    const imgUrl = item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : '';
+                    const title = item.Title;
+                    const year = item.Year;
+                    const imgUrl = (item.Poster && item.Poster !== 'N/A') ? item.Poster : '';
                     const thumbHtml = imgUrl ? `<img src="${imgUrl}" class="autocomplete-thumb">` : `<div class="autocomplete-thumb" style="background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;">?</div>`;
 
                     div.innerHTML = `${thumbHtml} <div style="display:flex; flex-direction:column;"><span style="font-weight: 500;">${title}</span><span style="font-size:0.8rem; color:var(--text-secondary);">${year}</span></div>`;
@@ -172,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             yearInput.value = '';
         }
 
-        const imgUrl = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '';
+        const imgUrl = (item.Poster && item.Poster !== 'N/A') ? item.Poster : '';
         if (imgUrl) {
             posterPreview.src = imgUrl;
             posterUrlInput.value = imgUrl;
@@ -181,28 +180,25 @@ document.addEventListener('DOMContentLoaded', () => {
             posterUrlInput.value = '';
         }
 
-        // Fetch runtime details separately from TMDB
+        // Fetch runtime details separately from OMDb
         movieRuntimeDisplay.innerHTML = 'Loading runtime...';
         try {
-            const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb';
-            const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
-            const response = await fetch(`https://api.themoviedb.org/3/${mediaType}/${item.id}?api_key=${apiKey}`);
-            const data = await response.json();
+            const apiKey = 'b9a5e69d';
+            const detailRes = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${item.imdbID || item.id}`);
+            const detailData = await detailRes.json();
 
-            let runtimeMins = 0;
-            if (mediaType === 'movie') {
-                runtimeMins = data.runtime || 0;
-            } else {
-                runtimeMins = (data.episode_run_time && data.episode_run_time.length > 0) ? data.episode_run_time[0] : 0;
-            }
+            if (detailData.Response === 'True' && detailData.Runtime && detailData.Runtime !== 'N/A') {
+                const runtimeStr = detailData.Runtime;
+                const runtimeMins = parseInt(runtimeStr.replace(/[^0-9]/g, ''));
 
-            if (runtimeMins > 0) {
-                const hours = Math.floor(runtimeMins / 60);
-                const mins = runtimeMins % 60;
-                const formatted = hours > 0 ? (mins > 0 ? `${hours}h ${mins}m` : `${hours}h`) : `${mins}m`;
-                movieRuntimeDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${formatted}`;
-                runtimeInput.value = runtimeMins;
-                return;
+                if (!isNaN(runtimeMins)) {
+                    const hours = Math.floor(runtimeMins / 60);
+                    const mins = runtimeMins % 60;
+                    const formatted = hours > 0 ? (mins > 0 ? `${hours}h ${mins}m` : `${hours}h`) : `${mins}m`;
+                    movieRuntimeDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ${formatted}`;
+                    runtimeInput.value = runtimeMins;
+                    return;
+                }
             }
         } catch (err) {
             console.error('Error fetching details:', err);
